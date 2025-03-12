@@ -23,13 +23,6 @@ const int MS_SENSOR_TRIGGER = 50;
 const int MS_ANALOG_PIN_COUNT = 16;
 const int MS_MOTOR_COUNT = 16;
 
-// This allows a single analog pin to control multiple motors.  If the motor
-// it is assigned to is -1 it will ignore it (motor 0 is valid)
-const int MS_MAX_MOTORS_PER_PIN = 2;
-
-// null motor
-const int MS_NM = -1;
-
 // After the sensor triggers, we read the sensor for this number
 // of milliseconds to make sure it triggers at least one more time
 const int MS_DOUBLE_TRIGGER_MS = 20;
@@ -44,9 +37,8 @@ void setup_ms_module(){
 
 // For each sensor i listed in m_analog_pin_map[i], if the sensor triggers turn on the motor m_analog_motor_map[i].
 // This can be used to make it so several sensors control the same motor, or a single sensor can control multiple motors.
-int m_analog_pin_map[MS_ANALOG_PIN_COUNT]                          = {A0,             A1,        A2,         A3,        A4,       A5,        A6,            A7,           A8,         A9,        A10,          A11,        A12,          A13,          A14,          A15};
-int m_analog_motor_map[MS_ANALOG_PIN_COUNT][MS_MAX_MOTORS_PER_PIN] = {{MS_NM, 0}, {MS_NM, 1}, {MS_NM, 2}, {MS_NM, 3}, {MS_NM, 4}, {MS_NM, 5}, {MS_NM, 6}, {MS_NM, 7}, {MS_NM, 9}, {MS_NM, 9}, {MS_NM, 11}, {MS_NM, 11}, {MS_NM, 12}, {MS_NM, 13},  {MS_NM, 14},  {MS_NM, 15}};
-
+int m_analog_motor_map[MS_ANALOG_PIN_COUNT] = {0,   1,  2,  3,  4,  5, 6,   7,  9,  9,  11,  11,  12,  13,  14,  15};
+int m_analog_pin_map[MS_ANALOG_PIN_COUNT]   = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15};
 
 // read an individual sensor.
 // return true if the sensor triggered
@@ -90,25 +82,11 @@ void wakeup_motors() {
 
 // activate the motor associated with a specified sensor_id
 void open_gate(int sensor_id) {
-  for(int i=0; i<MS_MAX_MOTORS_PER_PIN; i++)
-  {
-    // if it is a null motor, ignore.
-    if (m_analog_motor_map[sensor_id][i] == MS_NM) {
-      continue;
-    }
-    pwm_controller.setPWM(m_analog_motor_map[sensor_id][i], 0, MS_SERVO_OPEN);
-  }
+  pwm_controller.setPWM(m_analog_motor_map[sensor_id], 0, MS_SERVO_OPEN);
 }
 
 void close_gate(int sensor_id) {
-  for(int i=0; i<MS_MAX_MOTORS_PER_PIN; i++)
-  {
-    // if it is a null motor, ignore
-    if (m_analog_motor_map[sensor_id][i] == MS_NM) {
-      continue;
-    }
-    pwm_controller.setPWM(m_analog_motor_map[sensor_id][i], 0, MS_SERVO_CLOSED);
-  }
+  pwm_controller.setPWM(m_analog_motor_map[sensor_id], 0, MS_SERVO_CLOSED);
 }
 
 void close_all_gates() {
